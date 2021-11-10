@@ -10,24 +10,46 @@ const canvas = document.querySelector("canvas.webgl");
 
 const scene = new THREE.Scene();
 
-// const cube = new THREE.Mesh(
-//     new THREE.BoxBufferGeometry(1,1,1),
-//     new THREE.MeshBasicMaterial({color: "blue"})
-// )
-// scene.add(cube)
+
+//  Texture
+const textureLoader = new THREE.TextureLoader()
+const star1 = textureLoader.load("/assets/star_08.png")
+const sunTexture = textureLoader.load("/assets/2k_sun.jpg")
 
 /*
  * Galaxy
  */
 
 const parameters = {};
-parameters.count = 2000;
+parameters.count = 20000;
 
 let geometry = null;
 let material = null;
 let points = null;
 
-const generateGalaxy = () => {
+const generateGalaxy = () => {  
+//   creating galaxy  
+  const Galaxy = new THREE.Group()
+  scene.add(Galaxy)
+
+
+//   creating sun
+
+// Sun Geometry
+  const sunGeometry = new THREE.SphereGeometry( 0.5, 64, 32 );
+//  Sun Material  
+  const sunMaterial = new THREE.MeshBasicMaterial( { map: sunTexture, transparent: true} );
+
+// Sun  
+  const sun = new THREE.Mesh( sunGeometry, sunMaterial );
+  sun.position.y = -0.45
+  Galaxy.add(sun)
+
+//  creating textBuffer
+
+// Text geometry
+ const textGeometry = new THREE.TextBufferGeometry()  
+    
   if (points != null) {
     geometry.dispose();
     material.dispose();
@@ -57,6 +79,9 @@ const generateGalaxy = () => {
   material = new THREE.PointsMaterial({
     size: 0.02,
     sizeAttenuation: true,
+    transparent: true,
+    alphaMap: star1,
+    depthWrite: false
   });
 
   /**
@@ -96,10 +121,10 @@ window.addEventListener("resize", () => {
 });
 
 // Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-camera.position.x = 3;
-camera.position.y = 3;
-camera.position.z = 3;
+const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height);
+camera.position.x = 0;
+camera.position.y = 0;
+camera.position.z = 1;
 scene.add(camera);
 
 // controls
