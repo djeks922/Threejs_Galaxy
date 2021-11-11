@@ -10,11 +10,14 @@ const canvas = document.querySelector("canvas.webgl");
 
 const scene = new THREE.Scene();
 
-
 //  Texture
-const textureLoader = new THREE.TextureLoader()
-const star1 = textureLoader.load("/assets/star_08.png")
-const sunTexture = textureLoader.load("/assets/2k_sun.jpg")
+const textureLoader = new THREE.TextureLoader();
+const star1 = textureLoader.load("/assets/star_08.png");
+const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
+
+// Font Loader
+
+const loader = new THREE.FontLoader();
 
 /*
  * Galaxy
@@ -23,37 +26,69 @@ const sunTexture = textureLoader.load("/assets/2k_sun.jpg")
 const parameters = {};
 parameters.count = 20000;
 
+let Galaxy = null;
 let geometry = null;
 let material = null;
+let sunGeometry = null;
+let sunMaterial = null;
 let points = null;
+let sun = null;
+const generateGalaxy = () => {
+  //   creating galaxy
+  if (Galaxy != null) {
+    scene.remove(Galaxy);
+  }
+  Galaxy = new THREE.Group();
+  scene.add(Galaxy);
 
-const generateGalaxy = () => {  
-//   creating galaxy  
-  const Galaxy = new THREE.Group()
-  scene.add(Galaxy)
+  //   creating sun
+  if (sun != null) {
+    sunGeometry.dispose();
+    sunMaterial.dispose();
+    Galaxy.remove(sun);
+  }
+  // Sun Geometry
+  sunGeometry = new THREE.SphereGeometry(0.5, 64, 32);
+  //  Sun Material
+  sunMaterial = new THREE.MeshBasicMaterial({
+    map: sunTexture,
+    transparent: true,
+  });
 
+  // Sun
+  sun = new THREE.Mesh(sunGeometry, sunMaterial);
+  sun.position.y = -0.5;
+  Galaxy.add(sun);
 
-//   creating sun
+  //  creating textBuffer
 
-// Sun Geometry
-  const sunGeometry = new THREE.SphereGeometry( 0.5, 64, 32 );
-//  Sun Material  
-  const sunMaterial = new THREE.MeshBasicMaterial( { map: sunTexture, transparent: true} );
+  // Text geometry
+  loader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+    const textGeometry = new THREE.TextBufferGeometry("Claradix", {
+      font: font,
+      size: 0.15,
+      height: 0.02,
+      curveSegments: 52,
+      bevelEnabled: true,
+      bevelThickness: 0.03,
+      bevelSize: 0.002,
+      bevelOffset: 0,
+      bevelSegments: 15,
+    });
+    const textMaterial = new THREE.MeshBasicMaterial({color: "white"});
+    const text = new THREE.Mesh(textGeometry, textMaterial);
+    textGeometry.center()
+    text.position.y=0.4
+    text.position.z = -0.8
+    text.rotation.x = 0.2
+   
+    Galaxy.add(text);
+  });
 
-// Sun  
-  const sun = new THREE.Mesh( sunGeometry, sunMaterial );
-  sun.position.y = -0.45
-  Galaxy.add(sun)
-
-//  creating textBuffer
-
-// Text geometry
- const textGeometry = new THREE.TextBufferGeometry()  
-    
   if (points != null) {
     geometry.dispose();
     material.dispose();
-    scene.remove(points);
+    Galaxy.remove(points);
   }
 
   /*
@@ -68,9 +103,10 @@ const generateGalaxy = () => {
   for (let i = 0; i < parameters.count; i++) {
     // const i3 = i * 3
 
-    positions[i] = (Math.random() -0.5) * 4;
+    positions[i] = (Math.random() - 0.5) * 7;
   }
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
 
   /**
    * Material
@@ -81,19 +117,19 @@ const generateGalaxy = () => {
     sizeAttenuation: true,
     transparent: true,
     alphaMap: star1,
-    depthWrite: false
+    depthWrite: false,
   });
 
   /**
    * Points
    */
   points = new THREE.Points(geometry, material);
-  scene.add(points);
+  Galaxy.add(points);
 };
 gui
   .add(parameters, "count")
   .min(100)
-  .max(100000)
+  .max(10000000)
   .step(100)
   .onFinishChange(generateGalaxy);
 generateGalaxy();
@@ -146,7 +182,10 @@ const clock = new THREE.Clock();
 const refresh = () => {
   const elapsedTime = clock.getElapsedTime();
 
+  sun.rotation.x = Math.sin(elapsedTime / 5);
+  sun.rotation.y = Math.cos(elapsedTime / 5);
   // update renderer
+
   renderer.render(scene, camera);
 
   // call refresh
