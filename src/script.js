@@ -23,15 +23,15 @@ const loader = new THREE.FontLoader();
  * Galaxy
  */
 
-const directionalLight = new THREE.AmbientLight(0xff00ff, 1);
+
 
 const parameters = {};
-parameters.count = 50000;
+parameters.count = 200000;
 parameters.size = 0.009;
-parameters.radius = 3;
+parameters.radius = 10;
 parameters.branches = 15;
-parameters.spin = 1;
-parameters.randomness = 0.7;
+parameters.spin = 3;
+parameters.randomness = 5;
 parameters.randomnessPower = 2;
 
 parameters.insideColor = "#ff00ff";
@@ -39,6 +39,8 @@ parameters.outsideColor = "#00ffff";
 
 parameters.near = 1;
 parameters.far = 100;
+
+parameters.intensity = 1;
 
 let Galaxy = null;
 
@@ -51,6 +53,7 @@ let sunGeometry = null;
 let sunMaterial = null;
 
 let light = null;
+let directionalLight = null;
 const generateGalaxy = () => {
   //   creating galaxy
   if (Galaxy != null) {
@@ -62,7 +65,8 @@ const generateGalaxy = () => {
 
   // Galaxy Lights
   light = new THREE.PointLight(0xffffff, parameters.near, parameters.far);
-  Galaxy.add(light);
+  directionalLight = new THREE.AmbientLight(0xffffff, parameters.intensity);
+  Galaxy.add(directionalLight,light);
   light.position.y = 2
 
   //   creating sun
@@ -105,9 +109,9 @@ const generateGalaxy = () => {
     textGeometry.center();
     text.position.y = 0.4;
     text.position.z = -0.8;
-    text.rotation.x = 0.2;
+    // text.rotation.x = 0.2;
 
-    // Galaxy.add(text);
+    Galaxy.add(text);
   });
 
   if (points != null) {
@@ -131,8 +135,8 @@ const generateGalaxy = () => {
   for (let i = 0; i < parameters.count; i++) {
     // position for each point
     const i3 = i * 3;
-
-    const radius = (Math.random() * parameters.radius)+20;
+    const radius = Math.random() * parameters.radius
+    
 
     const branchAngle =
       ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
@@ -141,27 +145,24 @@ const generateGalaxy = () => {
     const randomX =
       Math.pow(Math.random(), parameters.randomnessPower) *
       (Math.random() < 0.5 ? 1 : -1) *
-      parameters.randomness *
-      radius;
-    let randomY =
+      parameters.randomness;
+    const randomY =
       Math.pow(Math.random(), parameters.randomnessPower) *
       (Math.random() < 0.5 ? 1 : -1) *
-      parameters.randomness *
-      radius;
+      parameters.randomness;
     const randomZ =
       Math.pow(Math.random(), parameters.randomnessPower) *
       (Math.random() < 0.5 ? 1 : -1) *
-      parameters.randomness *
-      radius;
+      parameters.randomness;
     // if( i< 20) console.log(branchAngle)
     positions[i3] =  Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 1] = (radius < 2 ? Math.cos(radius*Math.PI*0.25)* 2 *(Math.random() < 0.5 ? 1 : -1) : 0) + randomY;
     positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
-    positions[i3 + 1] = randomY;
 
     // Colors
 
     const mixedColor = colorInside.clone();
-    mixedColor.lerp(colorOutside, radius / parameters.radius);
+    mixedColor.lerp(colorOutside, radius / (parameters.radius));
 
     colors[i3] = mixedColor.r;
     colors[i3 + 1] = mixedColor.g;
@@ -181,7 +182,6 @@ const generateGalaxy = () => {
     alphaMap: star1,
     transparent: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending,
     vertexColors: true,
   });
 
@@ -236,7 +236,7 @@ gui
   .onFinishChange(generateGalaxy);
 gui
   .add(parameters, "randomnessPower")
-  .min(1)
+  .min(0)
   .max(10)
   .step(0.001)
   .onFinishChange(generateGalaxy);
@@ -256,6 +256,12 @@ gui
   .min(100)
   .max(1000)
   .step(1)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "intensity")
+  .min(0)
+  .max(5)
+  .step(0.01)
   .onFinishChange(generateGalaxy);
 
 // Sizes
@@ -287,7 +293,7 @@ const camera = new THREE.PerspectiveCamera(
   0.001,
   1000
 );
-camera.position.x = 0;
+camera.position.x = 7;
 camera.position.y = 3;
 camera.position.z = 0;
 scene.add(camera);
@@ -311,12 +317,18 @@ const clock = new THREE.Clock();
 const refresh = () => {
   const elapsedTime = clock.getElapsedTime();
 
-  // sun.rotation.x = Math.sin(elapsedTime / 5);
-  // sun.rotation.y = Math.cos(elapsedTime / 5);
+  sun.rotation.x = Math.sin(elapsedTime / 5);
+  sun.rotation.y = Math.cos(elapsedTime / 5);
 
-  // points.rotation.y = elapsedTime
-  // points.rotation.z = Math.cos(elapsedTime / 50);
-  // camera.position.set(Math.sin(elapsedTime)*2,Math.sin(elapsedTime)*2,Math.sin(elapsedTime)*2)
+  points.rotation.x = Math.sin(elapsedTime / 500);
+  // points.rotation.y = Math.sin(elapsedTime / 500);
+  points.rotation.z = Math.cos(elapsedTime / 500);
+
+  // Galaxy.position.x+=elapsedTime/100000
+  // Galaxy.position.y+=elapsedTime/100000
+  // Galaxy.position.z+=elapsedTime/100000
+  // camera.position.set(Math.sin(elapsedTime/5)*parameters.radius,Math.sin(elapsedTime/5)*parameters.radius+3,Math.sin(elapsedTime/5)*parameters.radius+2)
+  // camera.lookAt(text.position)
   // update renderer
 
   renderer.render(scene, camera);
