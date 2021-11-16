@@ -143,7 +143,7 @@ const generateGalaxy = () => {
       (Math.random() < 0.5 ? 1 : -1) *
       parameters.randomness *
       radius;
-    const randomY =
+    let randomY =
       Math.pow(Math.random(), parameters.randomnessPower) *
       (Math.random() < 0.5 ? 1 : -1) *
       parameters.randomness *
@@ -154,10 +154,10 @@ const generateGalaxy = () => {
       parameters.randomness *
       radius;
     // if( i< 20) console.log(branchAngle)
-    positions[i3] =  Math.cos(branchAngle + spinAngle) * (radius) + randomX;
-    positions[i3 + 1] = Math.cos(branchAngle + spinAngle)/Math.sin(branchAngle + spinAngle) + randomY;
-    //  positions[i3] <=1 && positions[i3+2] <=1 
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * (radius) + randomZ;
+    positions[i3] =  Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+    if(positions[i3] < 1 && positions[i3] > -1 || positions[i3+2] < 1 && positions[i3 + 2] > -1) randomY = randomY + (randomY < 0 ? -0.5 : 0.5) ;
+    positions[i3 + 1] = randomY;
 
     // Colors
 
