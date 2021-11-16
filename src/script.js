@@ -85,7 +85,7 @@ const generateGalaxy = () => {
 
   // Sun
   sun = new THREE.Mesh(sunGeometry, sunMaterial);
-  // sun.position.y = -0.5;
+  sun.position.y = -0.5;
   Galaxy.add(sun);
   
 
@@ -107,9 +107,9 @@ const generateGalaxy = () => {
     const textMaterial = new THREE.MeshBasicMaterial({ color: "white" });
     const text = new THREE.Mesh(textGeometry, textMaterial);
     textGeometry.center();
-    text.position.y = 0.4;
-    text.position.z = -0.8;
-    // text.rotation.x = 0.2;
+    text.position.y += 0.9;
+    text.position.z += -0.5;
+    text.rotation.x = 0.9;
 
     Galaxy.add(text);
   });
@@ -231,7 +231,7 @@ gui
 gui
   .add(parameters, "randomness")
   .min(0)
-  .max(2)
+  .max(5)
   .step(0.001)
   .onFinishChange(generateGalaxy);
 gui
@@ -293,9 +293,9 @@ const camera = new THREE.PerspectiveCamera(
   0.001,
   1000
 );
-camera.position.x = 7;
-camera.position.y = 3;
-camera.position.z = 0;
+camera.position.x = 0;
+camera.position.y = 0;
+camera.position.z = 1.4;
 scene.add(camera);
 
 // controls
