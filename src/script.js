@@ -2,6 +2,7 @@ import "./style.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as THREE from "three";
 import * as dat from "dat.gui";
+import { AdditiveBlending } from "three";
 // console.log(THREE)
 
 const gui = new dat.GUI();
@@ -13,11 +14,13 @@ const scene = new THREE.Scene();
 
 //  Texture
 const textureLoader = new THREE.TextureLoader();
+
 const star1 = textureLoader.load("/assets/01-white[1005].png");
+star1.minFilter = THREE.NearestMipmapNearestFilter
+
 const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
 
 // Font Loader
-
 const loader = new THREE.FontLoader();
 
 /*
@@ -27,16 +30,16 @@ const loader = new THREE.FontLoader();
 
 
 const parameters = {};
-parameters.count = 10000;
+parameters.count = 20000;
 parameters.size = 0.195;
-parameters.radius = 3;
+parameters.radius = 4.25;
 parameters.branches = 3;
-parameters.branchHeight = 7;
+parameters.branchHeight = 20;
 parameters.spin = 3;
 parameters.randomness = 0;
 parameters.randomnessPower = 2;
 
-parameters.insideColor = "#ff9500";
+parameters.insideColor = "#5a00ff";
 parameters.outsideColor = "#5a00ff";
 
 parameters.near = 1;
@@ -44,13 +47,15 @@ parameters.far = 100;
 
 parameters.intensity = 1;
 parameters.y =  -7 ;
-parameters.x =  -3 ;
-parameters.z =  -3 ;
+parameters.x =  -3.5 ;
+parameters.z =  -4 ;
 
 let Galaxy = null;
 
 let points = null;
+let points2 = null;
 let geometry = null;
+let geometry2 = null;
 let material = null;
 
 let sun = null;
@@ -121,10 +126,12 @@ const generateGalaxy = () => {
     // Galaxy.add(text);
   });
 
-  if (points != null) {
+  if (points != null || points2 != null) {
     geometry.dispose();
+    geometry2.dispose();
     material.dispose();
     Galaxy.remove(points);
+    Galaxy.remove(points2)
   }
 
   /*
@@ -132,8 +139,10 @@ const generateGalaxy = () => {
    */
 
   geometry = new THREE.BufferGeometry();
+  geometry2 = new THREE.BufferGeometry();
 
   const positions = new Float32Array(parameters.count * 3);
+  const positions2 = new Float32Array(parameters.count * 3);
   const colors = new Float32Array(parameters.count * 3);
 
   const colorInside = new THREE.Color(parameters.insideColor);
@@ -165,7 +174,11 @@ const generateGalaxy = () => {
     
     positions[i3] =  Math.sin( branchAngle ) * radius + randomX;
     positions[i3 + 1] = (Math.tan(i%(parameters.count/parameters.branches)/(parameters.count/parameters.branches) * Math.PI * 0.25) + Math.floor(i/(parameters.count/parameters.branches)))* parameters.branchHeight;
-    positions[i3 + 2] = Math.cos(branchAngle) * radius + randomZ;
+    positions[i3 + 2] = Math.cos(branchAngle ) * radius + randomZ;
+
+    positions2[i3] = - Math.sin( branchAngle ) * radius + randomX;
+    positions2[i3 + 1] = (Math.tan(i%(parameters.count/parameters.branches)/(parameters.count/parameters.branches) * Math.PI * 0.25) + Math.floor(i/(parameters.count/parameters.branches)))* parameters.branchHeight;
+    positions2[i3 + 2] = - Math.cos(branchAngle ) * radius + randomZ;
     // if( i == 99999) console.log(i, positions[i3 + 1])
     /**
      *  version 1
@@ -187,6 +200,8 @@ const generateGalaxy = () => {
   // console.log(geometry.getAttribute('position'))
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
+  geometry2.setAttribute('position', new THREE.BufferAttribute(positions2,3));
+  geometry2.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   /**
    * Material
    */
@@ -198,14 +213,18 @@ const generateGalaxy = () => {
     transparent: true,
     depthWrite: false,
     vertexColors: true,
+    blending: AdditiveBlending
   });
 
   /**
    * Points
    */
   points = new THREE.Points(geometry, material);
+  points2 = new THREE.Points(geometry2, material);
   points.position.set(parameters.x,parameters.y,parameters.z);
+  points2.position.set(parameters.x,parameters.y,parameters.z)
   Galaxy.add(points);
+  Galaxy.add(points2)
 };
 generateGalaxy();
 
@@ -335,7 +354,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.x = 0;
 camera.position.y = 0;
-camera.position.z = 3;
+camera.position.z = 6;
 // Galaxy.add(camera);
 
 // controls
@@ -352,7 +371,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.render(scene, camera);
-// renderer.setClearColor( '#ffffff', 2 );
+renderer.setClearColor( '#1f1f27', 1 );
 
 // animation function (refresh rate )
 
@@ -360,37 +379,51 @@ const clock = new THREE.Clock();
 let wheelAngle;
 const refresh = () => {
   const elapsedTime = clock.getElapsedTime();
+  /**
+   *  Sun animation
+   */
 
   // sun.rotation.x = Math.sin(elapsedTime / 5);
   // sun.rotation.y = Math.cos(elapsedTime / 5);
 
-  // points.rotation.x = Math.sin(elapsedTime / 500);
-  canvas.onwheel = () => { 
-    wheelAngle = Math.PI * 0.01
-    points.rotation.y += Math.sin(wheelAngle)
-  };
-  document.onclick = (event) => {
-    if(event.target == document.getElementById('gf')){
-      wheelAngle = Math.PI * 0.05
-      points.rotation.y += Math.sin(wheelAngle)
-    }
-   
-  }
-  // Galaxy.position.x = 6
-  
-  // console.log(window.scrollY)
-  // points.rotation.z = Math.cos(elapsedTime / 500);
+  /**
+   *  Points animation
+   */
 
-  // Galaxy.position.x+=elapsedTime/100000
-  // Galaxy.position.y+=elapsedTime/100000
-  // Galaxy.position.z+=elapsedTime/100000
-  // camera.position.set(Math.sin(elapsedTime/5)*parameters.radius,Math.sin(elapsedTime/5)*parameters.radius+3,Math.sin(elapsedTime/5)*parameters.radius+2)
-  // camera.lookAt(text.position)
-  // update renderer
+  // points.rotation.y = Math.sin(elapsedTime / 20);
+  // points2.rotation.y = Math.sin(elapsedTime / 20);
+
+  // canvas.onwheel = () => { 
+  //   wheelAngle = Math.PI * 0.01
+  //   points.position.y -= Math.sin(wheelAngle)
+  //   points2.position.y -= Math.sin(wheelAngle)
+  //   points.rotation.y -= Math.sin(wheelAngle)
+  //   points2.rotation.y -= Math.sin(wheelAngle)
+  // };
+
+  // document.onclick = (event) => {
+  //   if(event.target == document.getElementById('gf')){
+  //     wheelAngle = Math.PI * 0.05
+  //     points.rotation.y += Math.sin(wheelAngle)
+  //   }
+   
+  // }
+  
+ /**
+  *  Controls updates
+  */
+
   controls.update();
+
+  /**
+   *  update renderer 
+    */ 
+  
   renderer.render(scene, camera);
 
-  // call refresh
+  /** 
+   *  call refresh
+   */ 
   window.requestAnimationFrame(refresh);
 };
 
