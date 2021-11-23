@@ -1,7 +1,9 @@
 import "./style.css";
+import gsap from 'gsap';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as THREE from "three";
 import * as dat from "dat.gui";
+import { AdditiveBlending } from "three";
 // console.log(THREE)
 
 const gui = new dat.GUI();
@@ -9,15 +11,18 @@ const gui = new dat.GUI();
 const canvas = document.querySelector("canvas.webgl");
 
 const scene = new THREE.Scene();
-scene.background= 0.3
+
+// scene.background= '0xffffff'
 
 //  Texture
 const textureLoader = new THREE.TextureLoader();
-const star1 = textureLoader.load("/assets/star_07.png");
+
+const star1 = textureLoader.load("/assets/01-white[1005].png");
+star1.minFilter = THREE.NearestMipmapNearestFilter
+
 const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
 
 // Font Loader
-
 const loader = new THREE.FontLoader();
 
 /*
@@ -27,28 +32,40 @@ const loader = new THREE.FontLoader();
 
 
 const parameters = {};
-parameters.count = 200000;
-parameters.size = 0.009;
-parameters.radius = 5;
-parameters.branches = 2;
-parameters.branchHeight = 2;
+<
+parameters.count = 10000;
+parameters.size = 0.189;
+parameters.radius = 2.55;
+parameters.branches = 1;
+parameters.branchHeight = 15;
+
 parameters.spin = 3;
 parameters.randomness = 0;
 parameters.randomnessPower = 2;
 
-parameters.insideColor = "#ff9500";
+
+parameters.insideColor = "#5a00ff";
+
 parameters.outsideColor = "#5a00ff";
 
 parameters.near = 1;
 parameters.far = 100;
 
 parameters.intensity = 1;
-parameters.y = 0 ;
+
+parameters.y =  -7 ;
+parameters.x =  -2.5 ;
+parameters.z =  0 ;
+
 
 let Galaxy = null;
 
 let points = null;
+
+let points2 = null;
+
 let geometry = null;
+let geometry2 = null;
 let material = null;
 
 let sun = null;
@@ -65,6 +82,10 @@ const generateGalaxy = () => {
   }
   Galaxy = new THREE.Group();
   scene.add(Galaxy);
+
+
+
+
 
   // Galaxy Lights
   light = new THREE.PointLight(0xffffff, parameters.near, parameters.far);
@@ -89,7 +110,9 @@ const generateGalaxy = () => {
   // Sun
   sun = new THREE.Mesh(sunGeometry, sunMaterial);
   // sun.position.y = -0.5;
-  Galaxy.add(sun);
+
+  // Galaxy.add(sun);
+
   
 
   //  creating textBuffer
@@ -117,10 +140,12 @@ const generateGalaxy = () => {
     // Galaxy.add(text);
   });
 
-  if (points != null) {
+  if (points != null || points2 != null) {
     geometry.dispose();
+    geometry2.dispose();
     material.dispose();
     Galaxy.remove(points);
+    Galaxy.remove(points2)
   }
 
   /*
@@ -128,8 +153,11 @@ const generateGalaxy = () => {
    */
 
   geometry = new THREE.BufferGeometry();
+  geometry2 = new THREE.BufferGeometry();
 
   const positions = new Float32Array(parameters.count * 3);
+  const positions2 = new Float32Array(parameters.count * 3);
+
   const colors = new Float32Array(parameters.count * 3);
 
   const colorInside = new THREE.Color(parameters.insideColor);
@@ -161,7 +189,13 @@ const generateGalaxy = () => {
     
     positions[i3] =  Math.sin( branchAngle ) * radius + randomX;
     positions[i3 + 1] = (Math.tan(i%(parameters.count/parameters.branches)/(parameters.count/parameters.branches) * Math.PI * 0.25) + Math.floor(i/(parameters.count/parameters.branches)))* parameters.branchHeight;
-    positions[i3 + 2] = Math.cos(branchAngle) * radius + randomZ;
+    positions[i3 + 2] = Math.cos(branchAngle ) * radius + randomZ;
+
+    positions2[i3] = - Math.sin( branchAngle ) * radius + randomX;
+    positions2[i3 + 1] = (Math.tan(i%(parameters.count/parameters.branches)/(parameters.count/parameters.branches) * Math.PI * 0.25) + Math.floor(i/(parameters.count/parameters.branches)))* parameters.branchHeight;
+    positions2[i3 + 2] = - Math.cos(branchAngle ) * radius + randomZ;
+
+
     // if( i == 99999) console.log(i, positions[i3 + 1])
     /**
      *  version 1
@@ -183,6 +217,10 @@ const generateGalaxy = () => {
   // console.log(geometry.getAttribute('position'))
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
+
+  geometry2.setAttribute('position', new THREE.BufferAttribute(positions2,3));
+  geometry2.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
   /**
    * Material
    */
@@ -194,14 +232,23 @@ const generateGalaxy = () => {
     transparent: true,
     depthWrite: false,
     vertexColors: true,
+
+    blending: AdditiveBlending
+
   });
 
   /**
    * Points
    */
   points = new THREE.Points(geometry, material);
-  points.position.y = parameters.y
+
+  points2 = new THREE.Points(geometry2, material);
+  points.position.set(parameters.x,parameters.y,parameters.z);
+  points2.position.set(parameters.x,parameters.y,parameters.z)
+
+
   Galaxy.add(points);
+  Galaxy.add(points2)
 };
 generateGalaxy();
 
@@ -219,7 +266,8 @@ gui
 gui
   .add(parameters, "size")
   .min(0.001)
-  .max(0.1)
+  .max(0.5)
+
   .step(0.001)
   .onFinishChange(generateGalaxy);
 gui
@@ -230,7 +278,9 @@ gui
   .onFinishChange(generateGalaxy);
 gui
   .add(parameters, "branches")
-  .min(2)
+
+  .min(1)
+
   .max(20)
   .step(1)
   .onFinishChange(generateGalaxy);
@@ -238,7 +288,7 @@ gui
   .add(parameters, "branchHeight")
   .min(1)
   .max(50)
-  .step(1)
+  .step(0.5)
   .onFinishChange(generateGalaxy);
 gui
   .add(parameters, "spin")
@@ -285,7 +335,19 @@ gui
   .add(parameters, "y")
   .min(-100)
   .max(100)
-  .step(1)
+  .step(0.5)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "x")
+  .min(-100)
+  .max(100)
+  .step(0.5)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "z")
+  .min(-100)
+  .max(100)
+  .step(0.5)
   .onFinishChange(generateGalaxy);
 
 // Sizes
@@ -312,7 +374,7 @@ window.addEventListener("resize", () => {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-  75,
+  55,
   sizes.width / sizes.height,
   0.001,
   1000
@@ -320,12 +382,18 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 6;
-Galaxy.add(camera);
+
+// Galaxy.add(camera);
 
 // controls
 
-// const controls = new OrbitControls(camera, canvas);
-// controls.enableDamping = true; // smooth performance
+const controls = new OrbitControls(camera, canvas);
+
+controls.enableDamping = true; // smooth performance
+controls.enableZoom = false;
+// controls.autoRotate = true;
+// controls.dampingFactor = 0.1
+controls.update()
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -333,44 +401,78 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.render(scene, camera);
-// renderer.setClearColor( '#ffffff', 2 );
+renderer.setClearColor( '#1f1f27', 1 );
+
 
 // animation function (refresh rate )
 
 const clock = new THREE.Clock();
 let wheelAngle;
+
+canvas.onwheel = (event) => { 
+  console.log(event)
+  wheelAngle = Math.PI * 2;
+  // points.position.y -= Math.sin(wheelAngle)
+  // points2.position.y -= Math.sin(wheelAngle)
+  if(event.deltaY < 0){
+    // console.log(event.deltaY)
+    gsap.to(points.position,{ duration:1, y: (points.position.y + 1)})
+    gsap.to(points2.position,{ duration:1, y: (points.position.y + 1)})
+    gsap.to(points.rotation,{ duration:1, y: (points.rotation.y + 1)})
+    gsap.to(points2.rotation,{ duration:1, y: (points2.rotation.y + 1)})
+  }
+  if(event.deltaY > 0){
+    // console.log(event.deltaY)
+    gsap.to(points.position,{ duration:1, y: (points.position.y - 1)})
+    gsap.to(points2.position,{ duration:1, y: (points.position.y - 1)})
+    gsap.to(points.rotation,{ duration:1, y: (points.rotation.y - 1)})
+    gsap.to(points2.rotation,{ duration:1, y: (points2.rotation.y - 1)})
+  }
+ 
+};
 const refresh = () => {
   const elapsedTime = clock.getElapsedTime();
+  /**
+   *  Sun animation
+   */
 
   // sun.rotation.x = Math.sin(elapsedTime / 5);
   // sun.rotation.y = Math.cos(elapsedTime / 5);
 
   // points.rotation.x = Math.sin(elapsedTime / 500);
-  canvas.onwheel = () => { 
-    wheelAngle = Math.PI * 0.05
-    points.rotation.y += Math.sin(wheelAngle)
-  };
-  document.onclick = (event) => {
-    if(event.target == document.getElementById('gf')){
-      wheelAngle = Math.PI * 0.05
-      points.rotation.y += Math.sin(wheelAngle)
-    }
+
+
+  /**
+   *  Points animation
+   */
+  points.rotation.y = Math.tan(elapsedTime / 2);
+  points2.rotation.y = Math.tan(elapsedTime / 2);
+
+
+
+  // document.onclick = (event) => {
+  //   if(event.target == document.getElementById('gf')){
+  //     wheelAngle = Math.PI * 0.05
+  //     points.rotation.y += Math.sin(wheelAngle)
+  //   }
    
-  }
+  // }
   
-  // console.log(window.scrollY)
-  // points.rotation.z = Math.cos(elapsedTime / 500);
+ /**
+  *  Controls updates
+  */
 
-  // Galaxy.position.x+=elapsedTime/100000
-  // Galaxy.position.y+=elapsedTime/100000
-  // Galaxy.position.z+=elapsedTime/100000
-  // camera.position.set(Math.sin(elapsedTime/5)*parameters.radius,Math.sin(elapsedTime/5)*parameters.radius+3,Math.sin(elapsedTime/5)*parameters.radius+2)
-  // camera.lookAt(text.position)
-  // update renderer
+  controls.update();
 
+  /**
+   *  update renderer 
+    */ 
+  
   renderer.render(scene, camera);
 
-  // call refresh
+  /** 
+   *  call refresh
+   */ 
   window.requestAnimationFrame(refresh);
 };
 
