@@ -1,4 +1,5 @@
 import "./style.css";
+import gsap from 'gsap';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as THREE from "three";
 import * as dat from "dat.gui";
@@ -30,11 +31,11 @@ const loader = new THREE.FontLoader();
 
 
 const parameters = {};
-parameters.count = 20000;
-parameters.size = 0.195;
-parameters.radius = 4.25;
-parameters.branches = 3;
-parameters.branchHeight = 20;
+parameters.count = 10000;
+parameters.size = 0.189;
+parameters.radius = 2.55;
+parameters.branches = 1;
+parameters.branchHeight = 15;
 parameters.spin = 3;
 parameters.randomness = 0;
 parameters.randomnessPower = 2;
@@ -47,8 +48,8 @@ parameters.far = 100;
 
 parameters.intensity = 1;
 parameters.y =  -7 ;
-parameters.x =  -3.5 ;
-parameters.z =  -4 ;
+parameters.x =  -2.5 ;
+parameters.z =  0 ;
 
 let Galaxy = null;
 
@@ -253,7 +254,7 @@ gui
   .onFinishChange(generateGalaxy);
 gui
   .add(parameters, "branches")
-  .min(2)
+  .min(1)
   .max(20)
   .step(1)
   .onFinishChange(generateGalaxy);
@@ -363,6 +364,8 @@ const controls = new OrbitControls(camera, canvas);
 
 controls.enableDamping = true; // smooth performance
 controls.enableZoom = false;
+// controls.autoRotate = true;
+// controls.dampingFactor = 0.1
 controls.update()
 
 // Renderer
@@ -377,6 +380,28 @@ renderer.setClearColor( '#1f1f27', 1 );
 
 const clock = new THREE.Clock();
 let wheelAngle;
+canvas.onwheel = (event) => { 
+  console.log(event)
+  wheelAngle = Math.PI * 2;
+  // points.position.y -= Math.sin(wheelAngle)
+  // points2.position.y -= Math.sin(wheelAngle)
+  if(event.deltaY < 0){
+    // console.log(event.deltaY)
+    gsap.to(points.position,{ duration:1, y: (points.position.y + 1)})
+    gsap.to(points2.position,{ duration:1, y: (points.position.y + 1)})
+    gsap.to(points.rotation,{ duration:1, y: (points.rotation.y + 1)})
+    gsap.to(points2.rotation,{ duration:1, y: (points2.rotation.y + 1)})
+  }
+  if(event.deltaY > 0){
+    // console.log(event.deltaY)
+    gsap.to(points.position,{ duration:1, y: (points.position.y - 1)})
+    gsap.to(points2.position,{ duration:1, y: (points.position.y - 1)})
+    gsap.to(points.rotation,{ duration:1, y: (points.rotation.y - 1)})
+    gsap.to(points2.rotation,{ duration:1, y: (points2.rotation.y - 1)})
+  }
+ 
+};
+
 const refresh = () => {
   const elapsedTime = clock.getElapsedTime();
   /**
@@ -389,17 +414,10 @@ const refresh = () => {
   /**
    *  Points animation
    */
+  points.rotation.y = Math.tan(elapsedTime / 2);
+  points2.rotation.y = Math.tan(elapsedTime / 2);
 
-  // points.rotation.y = Math.sin(elapsedTime / 20);
-  // points2.rotation.y = Math.sin(elapsedTime / 20);
 
-  // canvas.onwheel = () => { 
-  //   wheelAngle = Math.PI * 0.01
-  //   points.position.y -= Math.sin(wheelAngle)
-  //   points2.position.y -= Math.sin(wheelAngle)
-  //   points.rotation.y -= Math.sin(wheelAngle)
-  //   points2.rotation.y -= Math.sin(wheelAngle)
-  // };
 
   // document.onclick = (event) => {
   //   if(event.target == document.getElementById('gf')){
