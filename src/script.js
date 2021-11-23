@@ -9,11 +9,11 @@ const gui = new dat.GUI();
 const canvas = document.querySelector("canvas.webgl");
 
 const scene = new THREE.Scene();
-scene.background= 0.3
+// scene.background= '0xffffff'
 
 //  Texture
 const textureLoader = new THREE.TextureLoader();
-const star1 = textureLoader.load("/assets/star_07.png");
+const star1 = textureLoader.load("/assets/01-white[1005].png");
 const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
 
 // Font Loader
@@ -27,11 +27,11 @@ const loader = new THREE.FontLoader();
 
 
 const parameters = {};
-parameters.count = 200000;
-parameters.size = 0.009;
-parameters.radius = 5;
-parameters.branches = 2;
-parameters.branchHeight = 2;
+parameters.count = 10000;
+parameters.size = 0.195;
+parameters.radius = 3;
+parameters.branches = 3;
+parameters.branchHeight = 7;
 parameters.spin = 3;
 parameters.randomness = 0;
 parameters.randomnessPower = 2;
@@ -43,7 +43,9 @@ parameters.near = 1;
 parameters.far = 100;
 
 parameters.intensity = 1;
-parameters.y = 0 ;
+parameters.y =  -7 ;
+parameters.x =  -3 ;
+parameters.z =  -3 ;
 
 let Galaxy = null;
 
@@ -65,6 +67,8 @@ const generateGalaxy = () => {
   }
   Galaxy = new THREE.Group();
   scene.add(Galaxy);
+
+
 
   // Galaxy Lights
   light = new THREE.PointLight(0xffffff, parameters.near, parameters.far);
@@ -89,7 +93,7 @@ const generateGalaxy = () => {
   // Sun
   sun = new THREE.Mesh(sunGeometry, sunMaterial);
   // sun.position.y = -0.5;
-  Galaxy.add(sun);
+  // Galaxy.add(sun);
   
 
   //  creating textBuffer
@@ -200,7 +204,7 @@ const generateGalaxy = () => {
    * Points
    */
   points = new THREE.Points(geometry, material);
-  points.position.y = parameters.y
+  points.position.set(parameters.x,parameters.y,parameters.z);
   Galaxy.add(points);
 };
 generateGalaxy();
@@ -219,7 +223,7 @@ gui
 gui
   .add(parameters, "size")
   .min(0.001)
-  .max(0.1)
+  .max(0.5)
   .step(0.001)
   .onFinishChange(generateGalaxy);
 gui
@@ -238,7 +242,7 @@ gui
   .add(parameters, "branchHeight")
   .min(1)
   .max(50)
-  .step(1)
+  .step(0.5)
   .onFinishChange(generateGalaxy);
 gui
   .add(parameters, "spin")
@@ -285,7 +289,19 @@ gui
   .add(parameters, "y")
   .min(-100)
   .max(100)
-  .step(1)
+  .step(0.5)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "x")
+  .min(-100)
+  .max(100)
+  .step(0.5)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "z")
+  .min(-100)
+  .max(100)
+  .step(0.5)
   .onFinishChange(generateGalaxy);
 
 // Sizes
@@ -312,20 +328,23 @@ window.addEventListener("resize", () => {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-  75,
+  55,
   sizes.width / sizes.height,
   0.001,
   1000
 );
 camera.position.x = 0;
 camera.position.y = 0;
-camera.position.z = 6;
-Galaxy.add(camera);
+camera.position.z = 3;
+// Galaxy.add(camera);
 
 // controls
 
-// const controls = new OrbitControls(camera, canvas);
-// controls.enableDamping = true; // smooth performance
+const controls = new OrbitControls(camera, canvas);
+
+controls.enableDamping = true; // smooth performance
+controls.enableZoom = false;
+controls.update()
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -347,7 +366,7 @@ const refresh = () => {
 
   // points.rotation.x = Math.sin(elapsedTime / 500);
   canvas.onwheel = () => { 
-    wheelAngle = Math.PI * 0.05
+    wheelAngle = Math.PI * 0.01
     points.rotation.y += Math.sin(wheelAngle)
   };
   document.onclick = (event) => {
@@ -357,6 +376,7 @@ const refresh = () => {
     }
    
   }
+  // Galaxy.position.x = 6
   
   // console.log(window.scrollY)
   // points.rotation.z = Math.cos(elapsedTime / 500);
@@ -367,7 +387,7 @@ const refresh = () => {
   // camera.position.set(Math.sin(elapsedTime/5)*parameters.radius,Math.sin(elapsedTime/5)*parameters.radius+3,Math.sin(elapsedTime/5)*parameters.radius+2)
   // camera.lookAt(text.position)
   // update renderer
-
+  controls.update();
   renderer.render(scene, camera);
 
   // call refresh
