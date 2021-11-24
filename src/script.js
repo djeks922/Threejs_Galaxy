@@ -18,7 +18,7 @@ const scene = new THREE.Scene();
 const textureLoader = new THREE.TextureLoader();
 
 const star1 = textureLoader.load("/assets/01-white[1005].png");
-// star1.minFilter = THREE.NearestMipmapNearestFilter
+
 
 const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
 
@@ -44,9 +44,11 @@ parameters.randomness = 0;
 parameters.randomnessPower = 2;
 
 
-parameters.insideColor = "#5a00ff";
 
-parameters.outsideColor = "#5a00ff";
+parameters.insideColor = "#5c5a61";
+
+parameters.outsideColor = "#000000";
+
 
 parameters.near = 1;
 parameters.far = 100;
@@ -171,7 +173,7 @@ const generateGalaxy = () => {
 
     const branchAngle =
       ((i % (parameters.count/parameters.branches)) / (parameters.count/parameters.branches)) * Math.PI * 2;
-    const spinAngle = radius * parameters.spin;
+    // const spinAngle = radius * parameters.spin;
 
     const randomX =
       Math.pow(Math.random(), parameters.randomnessPower) *
@@ -232,7 +234,6 @@ const generateGalaxy = () => {
     transparent: true,
     depthWrite: false,
     vertexColors: true,
-
     blending: AdditiveBlending
 
   });
@@ -250,7 +251,7 @@ const generateGalaxy = () => {
   Galaxy.add(points);
   Galaxy.add(points2)
 };
-generateGalaxy();
+
 
 /**
  *  GUI parameters
@@ -383,11 +384,15 @@ camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 6;
 
+
 // Galaxy.add(camera);
 
-// controls
+/**
+ *  Controls
+ */
 
 const controls = new OrbitControls(camera, canvas);
+
 
 controls.enableDamping = true; // smooth performance
 controls.enableZoom = false;
@@ -395,25 +400,27 @@ controls.enableZoom = false;
 // controls.dampingFactor = 0.1
 controls.update()
 
-// Renderer
+
+generateGalaxy();
+
+
+/**
+ *  Renderer
+ */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
 renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.render(scene, camera);
 renderer.setClearColor( '#1f1f27', 1 );
 
 
-// animation function (refresh rate )
 
-const clock = new THREE.Clock();
-let wheelAngle;
-
+/**
+ *  Wheel event for particle animation axis Y
+ */
 canvas.onwheel = (event) => { 
-  // console.log(event)
-  wheelAngle = Math.PI * 2;
-  // points.position.y -= Math.sin(wheelAngle)
-  // points2.position.y -= Math.sin(wheelAngle)
   if(event.deltaY < 0){
     // console.log(event.deltaY)
     gsap.to(points.position,{ duration:1, y: (points.position.y + 1)})
@@ -428,8 +435,11 @@ canvas.onwheel = (event) => {
     gsap.to(points.rotation,{ duration:1, y: (points.rotation.y - 1)})
     gsap.to(points2.rotation,{ duration:1, y: (points2.rotation.y - 1)})
   }
- 
 };
+/**
+ *  Animation function (loop)
+ */
+const clock = new THREE.Clock();
 const refresh = () => {
   const elapsedTime = clock.getElapsedTime();
   /**
@@ -446,23 +456,13 @@ const refresh = () => {
    *  Points animation
    */
   points.rotation.y -= 0.0003;
-  points2.rotation.y -= 0.0003;
-
-
-
-  // document.onclick = (event) => {
-  //   if(event.target == document.getElementById('gf')){
-  //     wheelAngle = Math.PI * 0.05
-  //     points.rotation.y += Math.sin(wheelAngle)
-  //   }
-   
-  // }
-  
+  points2.rotation.y -=  0.0003;
  /**
   *  Controls updates
   */
 
   controls.update();
+
 
   /**
    *  update renderer 
