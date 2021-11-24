@@ -32,6 +32,7 @@ const loader = new THREE.FontLoader();
 
 
 const parameters = {};
+
 parameters.count = 10000;
 parameters.size = 0.189;
 parameters.radius = 2.55;
@@ -43,9 +44,11 @@ parameters.randomness = 0;
 parameters.randomnessPower = 2;
 
 
+
 parameters.insideColor = "#5c5a61";
 
 parameters.outsideColor = "#000000";
+
 
 parameters.near = 1;
 parameters.far = 100;
@@ -381,6 +384,7 @@ camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 6;
 
+
 // Galaxy.add(camera);
 
 /**
@@ -389,13 +393,16 @@ camera.position.z = 6;
 
 const controls = new OrbitControls(camera, canvas);
 
+
 controls.enableDamping = true; // smooth performance
 controls.enableZoom = false;
 // controls.autoRotate = true;
 // controls.dampingFactor = 0.1
 controls.update()
 
+
 generateGalaxy();
+
 
 /**
  *  Renderer
@@ -407,6 +414,8 @@ renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.render(scene, camera);
 renderer.setClearColor( '#1f1f27', 1 );
+
+
 
 /**
  *  Wheel event for particle animation axis Y
@@ -453,6 +462,7 @@ const refresh = () => {
   */
 
   controls.update();
+
 
   /**
    *  update renderer 
