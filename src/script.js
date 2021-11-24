@@ -18,7 +18,7 @@ const scene = new THREE.Scene();
 const textureLoader = new THREE.TextureLoader();
 
 const star1 = textureLoader.load("/assets/01-white[1005].png");
-star1.minFilter = THREE.NearestMipmapNearestFilter
+// star1.minFilter = THREE.NearestMipmapNearestFilter
 
 const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
 
@@ -32,7 +32,7 @@ const loader = new THREE.FontLoader();
 
 
 const parameters = {};
-<
+
 parameters.count = 10000;
 parameters.size = 0.189;
 parameters.radius = 2.55;
@@ -410,7 +410,7 @@ const clock = new THREE.Clock();
 let wheelAngle;
 
 canvas.onwheel = (event) => { 
-  console.log(event)
+  // console.log(event)
   wheelAngle = Math.PI * 2;
   // points.position.y -= Math.sin(wheelAngle)
   // points2.position.y -= Math.sin(wheelAngle)
@@ -445,8 +445,8 @@ const refresh = () => {
   /**
    *  Points animation
    */
-  points.rotation.y = Math.tan(elapsedTime / 2);
-  points2.rotation.y = Math.tan(elapsedTime / 2);
+  points.rotation.y -= 0.0003;
+  points2.rotation.y -= 0.0003;
 
 
 
