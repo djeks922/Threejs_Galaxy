@@ -17,10 +17,10 @@ const scene = new THREE.Scene();
 //  Texture
 const textureLoader = new THREE.TextureLoader();
 
-const star1 = textureLoader.load("/assets/01-white[1005].png");
+const star1 = textureLoader.load("/assets/octagon.jpg");
 // star1.minFilter = THREE.NearestMipmapNearestFilter
 
-const sunTexture = textureLoader.load("/assets/2k_sun.jpg");
+const sunTexture = textureLoader.load("/assets/mirvari.png");
 
 // Font Loader
 const loader = new THREE.FontLoader();
@@ -228,6 +228,7 @@ const generateGalaxy = () => {
   material = new THREE.PointsMaterial({
     size: parameters.size,
     sizeAttenuation: true,
+    map: sunTexture,
     alphaMap: star1,
     transparent: true,
     depthWrite: false,
